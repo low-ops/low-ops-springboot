@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +34,7 @@ public class AvatarService {
     private final BackendSupport backendSupport;
     private final S3StorageService s3StorageService;
 
-    public AvatarService(BackendSupport backendSupport, S3StorageService s3StorageService) {
+    public AvatarService(BackendSupport backendSupport, @Lazy S3StorageService s3StorageService) {
         this.backendSupport = backendSupport;
         this.s3StorageService = s3StorageService;
     }

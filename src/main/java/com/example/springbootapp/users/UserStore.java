@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -40,8 +41,8 @@ public class UserStore {
     public UserStore(
             BackendSupport backendSupport,
             DatabaseSupport databaseSupport,
-            S3StorageService s3StorageService,
-            AvatarService avatarService
+            @Lazy S3StorageService s3StorageService,
+            @Lazy AvatarService avatarService
     ) {
         this.backendSupport = backendSupport;
         this.databaseSupport = databaseSupport;

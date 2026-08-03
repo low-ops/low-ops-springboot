@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +32,7 @@ public class UserController {
     private final UserStore userStore;
     private final AvatarService avatarService;
 
-    public UserController(UserStore userStore, AvatarService avatarService) {
+    public UserController(@Lazy UserStore userStore, @Lazy AvatarService avatarService) {
         this.userStore = userStore;
         this.avatarService = avatarService;
     }

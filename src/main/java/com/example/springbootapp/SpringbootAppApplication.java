@@ -13,6 +13,8 @@ import org.springframework.boot.jdbc.autoconfigure.JdbcTemplateAutoConfiguration
 })
 public class SpringbootAppApplication {
     public static void main(String[] args) {
+        long maxHeapMb = Runtime.getRuntime().maxMemory() / (1024 * 1024);
+        System.out.println("[INFO] lowops: JVM max heap ~" + maxHeapMb + "MB");
         SpringApplication.run(SpringbootAppApplication.class, args);
     }
 }
