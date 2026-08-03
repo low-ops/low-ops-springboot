@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,11 +45,11 @@ public class UserController {
     public ResponseEntity<UserResponse> createUserMultipart(
             @RequestParam("name") String name,
             @RequestParam("email") String email,
-            @RequestPart(value = "avatar_file", required = false) MultipartFile avatarFile
+            @RequestParam(value = "avatar_file", required = false) MultipartFile avatarFile
     ) {
         validateRequired(name, email);
         UserData created = userStore.createUser(
-                userStore.validatedUserData(name.trim(), email.trim(), avatarFile, null, null)
+                userStore.validatedUserData(name.trim(), email.trim(), emptyToNull(avatarFile), null, null)
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(userStore.toPublicResponse(created));
     }
@@ -80,9 +79,9 @@ public class UserController {
             @PathVariable long userId,
             @RequestParam("name") String name,
             @RequestParam("email") String email,
-            @RequestPart(value = "avatar_file", required = false) MultipartFile avatarFile
+            @RequestParam(value = "avatar_file", required = false) MultipartFile avatarFile
     ) {
-        return update(userId, name, email, avatarFile, false);
+        return update(userId, name, email, emptyToNull(avatarFile), false);
     }
 
     @PutMapping(value = {"/{userId}", "/{userId}/"}, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -95,9 +94,9 @@ public class UserController {
             @PathVariable long userId,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "email", required = false) String email,
-            @RequestPart(value = "avatar_file", required = false) MultipartFile avatarFile
+            @RequestParam(value = "avatar_file", required = false) MultipartFile avatarFile
     ) {
-        return update(userId, name, email, avatarFile, true);
+        return update(userId, name, email, emptyToNull(avatarFile), true);
     }
 
     @PatchMapping(value = {"/{userId}", "/{userId}/"}, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -219,6 +218,13 @@ public class UserController {
 
     private String stringValue(Object value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    private MultipartFile emptyToNull(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        return file;
     }
 
     public static class ValidationException extends RuntimeException {

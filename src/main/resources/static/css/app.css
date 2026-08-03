@@ -546,6 +546,16 @@ a {
   transform: translate(-50%, 0);
 }
 
+.sheet-notice {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
 .hidden {
   display: none !important;
 }

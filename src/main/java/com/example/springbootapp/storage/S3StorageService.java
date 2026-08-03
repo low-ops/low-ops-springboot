@@ -11,6 +11,8 @@ import com.example.springbootapp.config.S3ConfigResolver.S3Settings;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
+import software.amazon.awssdk.core.checksums.ResponseChecksumValidation;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
@@ -75,9 +77,10 @@ public class S3StorageService {
                 .pathStyleAccessEnabled(resolved.forcePathStyle())
                 .build();
 
+        // S3-compatible gateways often reject the SDK's newer default checksum behavior.
         ClientOverrideConfiguration overrideConfiguration = ClientOverrideConfiguration.builder()
-                .apiCallTimeout(Duration.ofSeconds(8))
-                .apiCallAttemptTimeout(Duration.ofSeconds(5))
+                .apiCallTimeout(Duration.ofSeconds(30))
+                .apiCallAttemptTimeout(Duration.ofSeconds(20))
                 .build();
 
         S3Client candidate = S3Client.builder()
@@ -88,6 +91,8 @@ public class S3StorageService {
                 ))
                 .serviceConfiguration(s3Configuration)
                 .overrideConfiguration(overrideConfiguration)
+                .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+                .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
                 .build();
 
         try {
@@ -154,6 +159,7 @@ public class S3StorageService {
                         .build(),
                 RequestBody.fromBytes(body)
         );
+        logger.info("Uploaded object to S3 (bucket: {}, key: {}, bytes: {})", config.bucket(), key, body.length);
         return key;
     }
 

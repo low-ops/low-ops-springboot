@@ -19,7 +19,39 @@ const PeopleApp = (() => {
       .join('') || '?';
   }
 
+  function clearSheetNotice(root) {
+    const notice = root?.querySelector?.('.sheet-notice');
+    if (notice) {
+      notice.textContent = '';
+      notice.classList.add('hidden');
+    }
+  }
+
   function showToast(message) {
+    const openCard = document.querySelector('dialog[open] .sheet-card');
+    if (openCard) {
+      let notice = openCard.querySelector('.sheet-notice');
+      if (!notice) {
+        notice = document.createElement('p');
+        notice.className = 'sheet-notice';
+        notice.setAttribute('role', 'alert');
+        const actions = openCard.querySelector('.sheet-actions');
+        if (actions) {
+          openCard.insertBefore(notice, actions);
+        } else {
+          openCard.appendChild(notice);
+        }
+      }
+      notice.textContent = message;
+      notice.classList.remove('hidden');
+      clearTimeout(showToast._inlineTimer);
+      showToast._inlineTimer = setTimeout(() => {
+        notice.textContent = '';
+        notice.classList.add('hidden');
+      }, 3200);
+      return;
+    }
+
     const toast = document.getElementById('toast');
     if (!toast) return;
     toast.textContent = message;
@@ -74,6 +106,13 @@ const PeopleApp = (() => {
 
     let people = [];
 
+    function resetCreateForm() {
+      form.reset();
+      clearSheetNotice(form);
+      const fileInput = form.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    }
+
     function render() {
       const query = (searchEl.value || '').trim().toLowerCase();
       const filtered = people.filter((person) => {
@@ -124,7 +163,10 @@ const PeopleApp = (() => {
       }
     }
 
-    openBtn.addEventListener('click', () => sheet.showModal());
+    openBtn.addEventListener('click', () => {
+      resetCreateForm();
+      sheet.showModal();
+    });
     searchEl.addEventListener('input', render);
 
     createBtn.addEventListener('click', async () => {
@@ -138,9 +180,10 @@ const PeopleApp = (() => {
       }
 
       setButtonBusy(createBtn, true, 'Creating…');
+      clearSheetNotice(form);
       try {
         await request(API, { method: 'POST', body: data });
-        form.reset();
+        resetCreateForm();
         sheet.close();
         showToast('Person added');
         await load();
@@ -250,12 +293,16 @@ const PeopleApp = (() => {
       }
     });
 
-    deleteBtn.addEventListener('click', () => deleteSheet.showModal());
+    deleteBtn.addEventListener('click', () => {
+      clearSheetNotice(deleteSheet);
+      deleteSheet.showModal();
+    });
 
     confirmDeleteBtn.addEventListener('click', async () => {
       setButtonBusy(confirmDeleteBtn, true, 'Deleting…');
       try {
         await request(`${API}${userId}/`, { method: 'DELETE' });
+        deleteSheet.close();
         showToast('Person deleted');
         window.location.href = '/';
       } catch (error) {

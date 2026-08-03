@@ -61,6 +61,7 @@ public class AvatarService {
                 if (previousKey != null && !previousKey.isBlank() && !previousKey.equals(key)) {
                     s3StorageService.deleteObject(previousKey);
                 }
+                logger.info("Stored avatar for user {} in S3 key {}", userId, key);
                 return Map.of(
                         "avatar", "/api/users/" + userId + "/avatar/",
                         "avatar_key", key
@@ -69,7 +70,8 @@ public class AvatarService {
                 logger.warn(
                         "S3 upload failed for user {}. Falling back to local storage. Reason: {}",
                         userId,
-                        exc.toString()
+                        exc.toString(),
+                        exc
                 );
             }
         }

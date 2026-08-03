@@ -13,6 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -161,6 +162,8 @@ public class UserStore {
             } finally {
                 lock.unlock();
             }
+        } catch (DataIntegrityViolationException exc) {
+            throw exc;
         } catch (Exception exc) {
             throw new IllegalStateException("Failed to create user: " + exc.getMessage(), exc);
         }
