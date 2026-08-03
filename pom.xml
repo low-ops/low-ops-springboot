@@ -17,6 +17,14 @@
     <properties>
         <java.version>21</java.version>
         <aws.sdk.version>2.50.2</aws.sdk.version>
+        <!-- Override Spring Boot 4.1.0 pins for latest security patches -->
+        <postgresql.version>42.7.13</postgresql.version>
+        <tomcat.version>11.0.24</tomcat.version>
+        <logback.version>1.5.38</logback.version>
+        <netty.version>4.2.16.Final</netty.version>
+        <jackson-bom.version>3.2.1</jackson-bom.version>
+        <jackson-2-bom.version>2.21.5</jackson-2-bom.version>
+        <hikaricp.version>7.1.0</hikaricp.version>
     </properties>
 
     <dependencyManagement>
