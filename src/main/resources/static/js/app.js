@@ -74,9 +74,16 @@ const PeopleApp = (() => {
     return data;
   }
 
+  function avatarSrc(url) {
+    if (!url) return url;
+    // Force the browser to refetch when the same avatar path is reused.
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}_=${Date.now()}`;
+  }
+
   function avatarMarkup(user, className = 'avatar') {
     if (user.avatar) {
-      return `<img class="${className}" src="${user.avatar}" alt="">`;
+      return `<img class="${className}" src="${escapeHtml(user.avatar)}" alt="">`;
     }
     return `<span class="avatar-fallback ${className}">${initials(user.name)}</span>`;
   }
@@ -232,11 +239,12 @@ const PeopleApp = (() => {
       document.title = `${user.name} · Low-Ops`;
 
       if (user.avatar) {
-        avatarImage.src = user.avatar;
+        avatarImage.src = avatarSrc(user.avatar);
         avatarImage.alt = `${user.name} photo`;
         avatarImage.classList.remove('hidden');
         avatarFallback.classList.add('hidden');
       } else {
+        avatarImage.removeAttribute('src');
         avatarImage.classList.add('hidden');
         avatarFallback.classList.remove('hidden');
       }

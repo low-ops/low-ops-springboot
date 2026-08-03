@@ -124,8 +124,12 @@ public class UserController {
         if (payload == null) {
             throw notFound();
         }
+        String version = user.getAvatarKey() != null && !user.getAvatarKey().isBlank()
+                ? Integer.toUnsignedString(user.getAvatarKey().hashCode(), 36)
+                : "0";
         return ResponseEntity.ok()
-                .header(HttpHeaders.CACHE_CONTROL, "private, max-age=300")
+                .header(HttpHeaders.CACHE_CONTROL, "private, no-cache, must-revalidate")
+                .eTag('"' + version + '"')
                 .contentType(MediaType.parseMediaType(payload.contentType()))
                 .contentLength(payload.contentLength())
                 .body(payload.body());

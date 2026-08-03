@@ -324,9 +324,7 @@ public class UserStore {
             user.setEmail(rs.getString("email"));
             user.setAvatar(rs.getString("avatar"));
             user.setAvatarKey(rs.getString("avatar_key"));
-            if (user.getAvatarKey() != null && !user.getAvatarKey().isBlank()) {
-                user.setAvatar("/api/users/" + user.getId() + "/avatar/");
-            }
+            user.setAvatar(resolvePublicAvatar(user));
             return user;
         };
     }
@@ -336,11 +334,16 @@ public class UserStore {
         data.setId(user.getId());
         data.setName(user.getName());
         data.setEmail(user.getEmail());
-        data.setAvatar(user.getAvatar());
-        if (user.getAvatarKey() != null && !user.getAvatarKey().isBlank()) {
-            data.setAvatar("/api/users/" + user.getId() + "/avatar/");
-        }
+        data.setAvatar(resolvePublicAvatar(user));
         return data;
+    }
+
+    private String resolvePublicAvatar(UserData user) {
+        if (user.getAvatarKey() != null && !user.getAvatarKey().isBlank()) {
+            String version = Integer.toUnsignedString(user.getAvatarKey().hashCode(), 36);
+            return "/api/users/" + user.getId() + "/avatar/?v=" + version;
+        }
+        return user.getAvatar();
     }
 
     private UserData copy(UserData user) {
