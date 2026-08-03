@@ -110,6 +110,8 @@ const PeopleApp = (() => {
     const form = document.getElementById('create-form');
     const openBtn = document.getElementById('open-create');
     const createBtn = document.getElementById('create-submit');
+    const closeBtn = document.getElementById('create-close');
+    const cancelBtn = document.getElementById('create-cancel');
 
     let people = [];
 
@@ -118,6 +120,13 @@ const PeopleApp = (() => {
       clearSheetNotice(form);
       const fileInput = form.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = '';
+    }
+
+    function closeCreateSheet() {
+      resetCreateForm();
+      if (sheet.open) {
+        sheet.close();
+      }
     }
 
     function render() {
@@ -173,6 +182,12 @@ const PeopleApp = (() => {
     openBtn.addEventListener('click', () => {
       resetCreateForm();
       sheet.showModal();
+    });
+    closeBtn?.addEventListener('click', closeCreateSheet);
+    cancelBtn?.addEventListener('click', closeCreateSheet);
+    sheet.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      closeCreateSheet();
     });
     searchEl.addEventListener('input', render);
 
