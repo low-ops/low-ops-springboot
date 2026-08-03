@@ -22,7 +22,8 @@
         <tomcat.version>11.0.24</tomcat.version>
         <logback.version>1.5.38</logback.version>
         <netty.version>4.2.16.Final</netty.version>
-        <jackson-bom.version>3.2.1</jackson-bom.version>
+        <!-- Stay on 3.1.x: 3.2.x breaks List/record serialization with Spring Boot 4.1.0 -->
+        <jackson-bom.version>3.1.5</jackson-bom.version>
         <jackson-2-bom.version>2.21.5</jackson-2-bom.version>
         <hikaricp.version>7.1.0</hikaricp.version>
     </properties>
