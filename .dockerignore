@@ -1,0 +1,9 @@
+.git
+.gitignore
+target
+.env
+media/avatars/*
+!media/avatars/.gitkeep
+README.md
+images
+*.md
