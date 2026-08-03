@@ -1,6 +1,5 @@
 package com.example.springbootapp.users;
 
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -15,8 +14,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -112,19 +109,21 @@ public class UserStore {
         backendSupport.ensureBackends();
         try {
             if (databaseSupport.isDatabaseAvailable()) {
-                KeyHolder keyHolder = new GeneratedKeyHolder();
-                jdbc().update(connection -> {
-                    PreparedStatement ps = connection.prepareStatement(
-                            "INSERT INTO users (name, email, avatar, avatar_key) VALUES (?, ?, ?, ?) RETURNING id"
-                    );
-                    ps.setString(1, data.getName());
-                    ps.setString(2, data.getEmail());
-                    ps.setString(3, data.getAvatar());
-                    ps.setString(4, blankToNull(data.getAvatarKey()));
-                    return ps;
-                }, keyHolder);
-
-                long userId = extractGeneratedId(keyHolder);
+                Long userId = jdbc().queryForObject(
+                        """
+                        INSERT INTO users (name, email, avatar, avatar_key)
+                        VALUES (?, ?, ?, ?)
+                        RETURNING id
+                        """,
+                        Long.class,
+                        data.getName(),
+                        data.getEmail(),
+                        data.getAvatar(),
+                        blankToNull(data.getAvatarKey())
+                );
+                if (userId == null) {
+                    throw new IllegalStateException("Failed to create user");
+                }
                 if (data.getPendingUpload() != null) {
                     Map<String, String> saved = avatarService.saveAvatar(data.getPendingUpload(), userId, null);
                     jdbc().update(
@@ -359,22 +358,6 @@ public class UserStore {
             return null;
         }
         return value;
-    }
-
-    private long extractGeneratedId(KeyHolder keyHolder) {
-        List<Map<String, Object>> keyList = keyHolder.getKeyList();
-        if (keyList == null || keyList.isEmpty()) {
-            throw new IllegalStateException("Failed to create user");
-        }
-        Map<String, Object> keys = keyList.getFirst();
-        Object id = keys.get("id");
-        if (id == null) {
-            id = keys.get("ID");
-        }
-        if (id instanceof Number number) {
-            return number.longValue();
-        }
-        throw new IllegalStateException("Failed to create user");
     }
 
     public UserData validatedUserData(
