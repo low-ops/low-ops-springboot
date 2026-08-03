@@ -182,9 +182,14 @@ const PeopleApp = (() => {
       setButtonBusy(createBtn, true, 'Creating…');
       clearSheetNotice(form);
       try {
-        await request(API, { method: 'POST', body: data });
+        const created = await request(API, { method: 'POST', body: data });
         resetCreateForm();
         sheet.close();
+        if (created) {
+          people = [...people.filter((person) => person.id !== created.id), created]
+            .sort((a, b) => a.id - b.id);
+          render();
+        }
         showToast('Person added');
         await load();
       } catch (error) {

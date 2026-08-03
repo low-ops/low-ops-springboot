@@ -1,7 +1,6 @@
 package com.example.springbootapp.users;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -116,8 +115,7 @@ public class UserStore {
                 KeyHolder keyHolder = new GeneratedKeyHolder();
                 jdbc().update(connection -> {
                     PreparedStatement ps = connection.prepareStatement(
-                            "INSERT INTO users (name, email, avatar, avatar_key) VALUES (?, ?, ?, ?)",
-                            Statement.RETURN_GENERATED_KEYS
+                            "INSERT INTO users (name, email, avatar, avatar_key) VALUES (?, ?, ?, ?) RETURNING id"
                     );
                     ps.setString(1, data.getName());
                     ps.setString(2, data.getEmail());
@@ -126,11 +124,7 @@ public class UserStore {
                     return ps;
                 }, keyHolder);
 
-                Number key = keyHolder.getKey();
-                if (key == null) {
-                    throw new IllegalStateException("Failed to create user");
-                }
-                long userId = key.longValue();
+                long userId = extractGeneratedId(keyHolder);
                 if (data.getPendingUpload() != null) {
                     Map<String, String> saved = avatarService.saveAvatar(data.getPendingUpload(), userId, null);
                     jdbc().update(
@@ -365,6 +359,22 @@ public class UserStore {
             return null;
         }
         return value;
+    }
+
+    private long extractGeneratedId(KeyHolder keyHolder) {
+        List<Map<String, Object>> keyList = keyHolder.getKeyList();
+        if (keyList == null || keyList.isEmpty()) {
+            throw new IllegalStateException("Failed to create user");
+        }
+        Map<String, Object> keys = keyList.getFirst();
+        Object id = keys.get("id");
+        if (id == null) {
+            id = keys.get("ID");
+        }
+        if (id instanceof Number number) {
+            return number.longValue();
+        }
+        throw new IllegalStateException("Failed to create user");
     }
 
     public UserData validatedUserData(
