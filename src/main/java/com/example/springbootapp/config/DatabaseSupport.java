@@ -112,7 +112,8 @@ public class DatabaseSupport {
             String database
     ) {
         String jdbcUrl() {
-            return "jdbc:postgresql://" + host + ":" + port + "/" + database;
+            return "jdbc:postgresql://" + host + ":" + port + "/" + database
+                    + "?connectTimeout=5&socketTimeout=5&loginTimeout=5&tcpKeepAlive=true";
         }
     }
 }

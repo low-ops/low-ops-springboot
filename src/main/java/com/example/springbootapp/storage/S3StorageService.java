@@ -1,5 +1,7 @@
 package com.example.springbootapp.storage;
 
+import java.time.Duration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,7 @@ import com.example.springbootapp.config.S3ConfigResolver.S3Settings;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -72,6 +75,11 @@ public class S3StorageService {
                 .pathStyleAccessEnabled(resolved.forcePathStyle())
                 .build();
 
+        ClientOverrideConfiguration overrideConfiguration = ClientOverrideConfiguration.builder()
+                .apiCallTimeout(Duration.ofSeconds(8))
+                .apiCallAttemptTimeout(Duration.ofSeconds(5))
+                .build();
+
         S3Client candidate = S3Client.builder()
                 .region(Region.of(resolved.region()))
                 .endpointOverride(java.net.URI.create(resolved.endpoint()))
@@ -79,6 +87,7 @@ public class S3StorageService {
                         AwsBasicCredentials.create(resolved.accessKeyId(), resolved.secretAccessKey())
                 ))
                 .serviceConfiguration(s3Configuration)
+                .overrideConfiguration(overrideConfiguration)
                 .build();
 
         try {

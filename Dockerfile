@@ -8,15 +8,13 @@ FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq5 \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY --from=build /app/target/*.jar app.jar
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
+
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -Dspring.jmx.enabled=false"
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["java", "-jar", "app.jar"]

@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.springbootapp.config.BackendSupport;
 import com.example.springbootapp.storage.S3StorageService;
 import com.example.springbootapp.storage.S3StorageService.AvatarPayload;
 
@@ -29,9 +30,11 @@ public class AvatarService {
     private static final Pattern DATA_URI_PATTERN =
             Pattern.compile("^data:([^;]+);base64,(.+)$", Pattern.DOTALL);
 
+    private final BackendSupport backendSupport;
     private final S3StorageService s3StorageService;
 
-    public AvatarService(S3StorageService s3StorageService) {
+    public AvatarService(BackendSupport backendSupport, S3StorageService s3StorageService) {
+        this.backendSupport = backendSupport;
         this.s3StorageService = s3StorageService;
     }
 
@@ -41,6 +44,7 @@ public class AvatarService {
 
     public Map<String, String> saveAvatar(MultipartFile uploadedFile, long userId, String previousKey)
             throws IOException {
+        backendSupport.ensureBackends();
         String ext = extension(uploadedFile);
         String contentType = uploadedFile.getContentType();
         if (contentType == null || contentType.isBlank()) {
@@ -81,6 +85,7 @@ public class AvatarService {
     }
 
     public AvatarPayload loadAvatarPayload(UserData user) {
+        backendSupport.ensureBackends();
         String avatarKey = user.getAvatarKey();
         String avatar = user.getAvatar();
 
@@ -121,6 +126,7 @@ public class AvatarService {
     }
 
     public void deleteAvatar(String avatarKey) {
+        backendSupport.ensureBackends();
         if (avatarKey != null && !avatarKey.isBlank()) {
             s3StorageService.deleteObject(avatarKey);
         }

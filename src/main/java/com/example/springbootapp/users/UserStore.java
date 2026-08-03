@@ -19,6 +19,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.springbootapp.config.BackendSupport;
 import com.example.springbootapp.config.DatabaseSupport;
 import com.example.springbootapp.storage.S3StorageService;
 
@@ -27,6 +28,7 @@ public class UserStore {
 
     private static final Logger logger = LoggerFactory.getLogger("lowops.users");
 
+    private final BackendSupport backendSupport;
     private final DatabaseSupport databaseSupport;
     private final S3StorageService s3StorageService;
     private final AvatarService avatarService;
@@ -36,10 +38,12 @@ public class UserStore {
     private final Map<Long, UserData> users = new LinkedHashMap<>();
 
     public UserStore(
+            BackendSupport backendSupport,
             DatabaseSupport databaseSupport,
             S3StorageService s3StorageService,
             AvatarService avatarService
     ) {
+        this.backendSupport = backendSupport;
         this.databaseSupport = databaseSupport;
         this.s3StorageService = s3StorageService;
         this.avatarService = avatarService;
@@ -61,6 +65,7 @@ public class UserStore {
     }
 
     public List<UserData> listUsers() {
+        backendSupport.ensureBackends();
         if (databaseSupport.isDatabaseAvailable()) {
             return jdbc().query("SELECT id, name, email, avatar, avatar_key FROM users ORDER BY id", rowMapper());
         }
@@ -76,6 +81,7 @@ public class UserStore {
     }
 
     public UserData getUser(long userId, boolean includePrivate) {
+        backendSupport.ensureBackends();
         if (databaseSupport.isDatabaseAvailable()) {
             List<UserData> found = jdbc().query(
                     "SELECT id, name, email, avatar, avatar_key FROM users WHERE id = ?",
@@ -102,6 +108,7 @@ public class UserStore {
     }
 
     public UserData createUser(UserData data) {
+        backendSupport.ensureBackends();
         try {
             if (databaseSupport.isDatabaseAvailable()) {
                 KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -159,6 +166,7 @@ public class UserStore {
     }
 
     public UserData updateUser(long userId, UserData data, boolean partial) {
+        backendSupport.ensureBackends();
         try {
             if (databaseSupport.isDatabaseAvailable()) {
                 UserData existing = getUser(userId, true);
@@ -254,6 +262,7 @@ public class UserStore {
     }
 
     public boolean deleteUser(long userId) {
+        backendSupport.ensureBackends();
         if (databaseSupport.isDatabaseAvailable()) {
             UserData existing = getUser(userId, true);
             if (existing == null) {
