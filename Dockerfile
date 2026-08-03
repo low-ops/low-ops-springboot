@@ -18,8 +18,8 @@ RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
 
-# Small-container JVM: leave headroom for metaspace/native; prefer fast startup over peak throughput.
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=50.0 -XX:MaxMetaspaceSize=128m -Xss256k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Djava.security.egd=file:/dev/./urandom -Dspring.jmx.enabled=false"
+# Small-container JVM (~1Gi): leave headroom so heap+metaspace+native stay under the limit (avoids OOMKill restarts).
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=40.0 -XX:MaxMetaspaceSize=96m -Xss256k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -Dspring.jmx.enabled=false"
 
 # Give Slow CPU/memory environments time to boot before health failures restart the container.
 HEALTHCHECK --interval=10s --timeout=3s --start-period=120s --retries=3 \
