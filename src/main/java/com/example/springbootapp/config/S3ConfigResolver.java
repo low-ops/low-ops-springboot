@@ -150,7 +150,7 @@ public class S3ConfigResolver {
                 bucketParts.prefix(),
                 endpoint,
                 region,
-                !endpoint.contains("amazonaws.com"),
+                true,
                 parseBooleanEnv(env("S3_PERFORM_DELETE")),
                 serviceName
         );

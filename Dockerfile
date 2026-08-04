@@ -16,7 +16,9 @@ COPY --from=build /app/target/*.jar app.jar
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
-EXPOSE 8000
+EXPOSE 8000 8001
+
+ENV METRICS_PORT=8001
 
 # Small-container JVM (~1Gi): leave headroom so heap+metaspace+native stay under the limit (avoids OOMKill restarts).
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=40.0 -XX:MaxMetaspaceSize=96m -Xss256k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -Dspring.jmx.enabled=false"

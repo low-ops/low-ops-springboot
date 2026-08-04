@@ -24,16 +24,24 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.springbootapp.storage.S3StorageService.AvatarPayload;
 
+import io.micrometer.core.instrument.Counter;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserStore userStore;
     private final AvatarService avatarService;
+    private final Counter usersCreatedTotal;
 
-    public UserController(@Lazy UserStore userStore, @Lazy AvatarService avatarService) {
+    public UserController(
+            @Lazy UserStore userStore,
+            @Lazy AvatarService avatarService,
+            Counter usersCreatedTotal
+    ) {
         this.userStore = userStore;
         this.avatarService = avatarService;
+        this.usersCreatedTotal = usersCreatedTotal;
     }
 
     @GetMapping({"", "/"})
@@ -51,6 +59,7 @@ public class UserController {
         UserData created = userStore.createUser(
                 userStore.validatedUserData(name.trim(), email.trim(), emptyToNull(avatarFile), null, null)
         );
+        usersCreatedTotal.increment();
         return ResponseEntity.status(HttpStatus.CREATED).body(userStore.toPublicResponse(created));
     }
 
@@ -62,6 +71,7 @@ public class UserController {
         UserData created = userStore.createUser(
                 userStore.validatedUserData(name.trim(), email.trim(), null, null, null)
         );
+        usersCreatedTotal.increment();
         return ResponseEntity.status(HttpStatus.CREATED).body(userStore.toPublicResponse(created));
     }
 
